@@ -22,11 +22,11 @@ if [ -n "$NEED" ]; then
     apt-get update -qq && apt-get install -y $NEED
 fi
 
-# ─── 公共 python 依赖(装进 base python)───
-log "安装公共 python 依赖..."
-pip install -qU pip
-pip install -q "huggingface_hub[cli]" hf_transfer wandb calflops 2>/dev/null || \
-    pip install -q "huggingface_hub[cli]" hf_transfer wandb
+# ─── 公共 python 依赖(hf/wandb;profiling 不需要,装失败也不阻塞)───
+# 不用 -q / 2>/dev/null:让 pip 进度可见,避免看起来像卡死
+log "安装公共 python 依赖(hf/wandb,用于下载模型+日志;profiling 不需要)..."
+pip install -U pip
+pip install "huggingface_hub[cli]" hf_transfer wandb || warn "公共依赖装失败 — profiling 不受影响,可后续再 pip install"
 export HF_HUB_ENABLE_HF_TRANSFER=1
 
 # ─── 验证 GPU ───
@@ -45,6 +45,6 @@ print("=== torch profiler 自带,可直接用 ===")
 PY
 
 echo -e "\n${BOLD}${GREEN}基础环境就绪${RESET}"
-echo -e "${YELLOW}下一步:cd profiling && python run_basic.py${RESET}"
-echo -e "${YELLOW}装 nsys/ncu: bash install_nsight.sh${RESET}"
-echo -e "${YELLOW}装框架: bash setup_fastvideo.sh / setup_diffsynth.sh / setup_mg.sh${RESET}\n"
+echo -e "${YELLOW}下一步:cd scripts/profiling && python run_basic.py${RESET}"
+echo -e "${YELLOW}装 nsys/ncu: bash scripts/install_nsight.sh${RESET}"
+echo -e "${YELLOW}装框架: bash scripts/setup_fastvideo.sh / setup_diffsynth.sh / setup_mg.sh${RESET}\n"
