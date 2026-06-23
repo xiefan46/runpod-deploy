@@ -2,9 +2,11 @@
 import torch
 from mini import make, step
 
-m, x, opt = make()
+# 先开录制再建模型:这样连参数分配的栈都能抓到(make() 若在录制前,参数块就没栈)
+# stacks="python" → 悬停显示真实代码行(mini.py:行号),不是 C++ 天书(torch::unwind)
+torch.cuda.memory._record_memory_history(max_entries=200000, context="all", stacks="python")
 
-torch.cuda.memory._record_memory_history(max_entries=200000)
+m, x, opt = make()
 for _ in range(3):
     step(m, x, opt)
 torch.cuda.memory._dump_snapshot("snap.pickle")
