@@ -1,0 +1,21 @@
+# runtime-cloned frameworks (clone on pod, don't commit)
+FastVideo/
+DiffSynth-Studio/
+Matrix-Game/
+Wan2.1/
+Wan2.2/
+lingbot-world/
+models/
+
+# profiling outputs
+*.json
+*.pickle
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
