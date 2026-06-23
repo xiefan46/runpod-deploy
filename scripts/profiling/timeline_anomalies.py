@@ -6,13 +6,19 @@
 # 关键: 空洞 = GPU 空闲在等别人(等 CPU / 等传输 / 等发射)。baseline 无空洞;其余三个有。
 
 import torch, torch.nn as nn, time, numpy as np
-from torch.profiler import profile, ProfilerActivity, schedule
+from torch.profiler import profile, ProfilerActivity
 
-def prof_run(fn, name, steps=6):
-    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-                 schedule=schedule(wait=1, warmup=1, active=3)) as p:
-        for _ in range(steps):
-            fn(); p.step()
+def prof_run(fn, name, warmup=3, active=4):
+    # 不用 schedule:带 schedule 时,若循环步数没正好落在 cycle 边界,
+    # 下一个 cycle 会清掉上一个 cycle 的数据 → 导出空 trace(踩过这个坑)。
+    # 改法:warmup 在 profiler 外面跑(不污染 trace),profiler 内只录 active 步。
+    for _ in range(warmup):
+        fn()
+    torch.cuda.synchronize()
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as p:
+        for _ in range(active):
+            fn()
+        torch.cuda.synchronize()   # 等所有 kernel 真正跑完,确保都进 trace
     out = f"trace_{name}.json"
     p.export_chrome_trace(out)
     print(f"  导出 {out}")
