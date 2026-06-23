@@ -10,8 +10,8 @@ log() { echo -e "${GREEN}[$(date +%H:%M:%S)]${RESET} $*"; }
 
 if command -v nsys &>/dev/null; then log "nsys 已装: $(nsys --version | head -1)"; else
     log "安装 Nsight Systems..."
-    apt-get update -qq && apt-get install -y nsight-systems-cli 2>/dev/null || \
-        log "apt 装 nsys 失败,可从 NVIDIA 官网下 .run 包,或用 CUDA toolkit 自带的 nsys"
+    apt-get update -qq && apt-get install -y nsight-systems || \
+        log "apt 装 nsys 失败,可试带版本包(apt-cache search nsight 看,如 nsight-systems-2025.5.2),或官网 .run"
 fi
 
 if command -v ncu &>/dev/null; then log "ncu 已装: $(ncu --version | head -1)"; else
